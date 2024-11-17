@@ -25,7 +25,7 @@ class Puzzle():
             temp_puzzle = list()
             for row in range(9):
                 inp = input(f"Input row {row + 1}: ")
-                while (len(inp) != 9):
+                while (len(inp) != 9 or not inp.isdigit()):
                     inp = input(f"Input row {row + 1}: ")
                 temp_row = list()
                 for char in inp:
@@ -150,6 +150,7 @@ class Puzzle():
             return 
         elif False == self.__solution:
             print('No solution to this puzzle.')
+            return
         print("Solution:    ")
         for row in range(9):
             if ((row % 3 == 0) and (row != 0)):
