@@ -1,6 +1,5 @@
 from copy import deepcopy
-##from date import datetime
-
+from datetime import datetime
 
 class Puzzle():
     '''Sudoku Puzzle abstraction
@@ -33,14 +32,14 @@ class Puzzle():
                 temp_puzzle.append(temp_row)
                 
         else:
-            temp_puzzle = [[2,8,' ',3,4,5,9,7,6],
+            temp_puzzle = [[2,8,0,3,4,5,9,7,6],
                            [5,6,3,9,7,2,4,1,8],
-                           [7,4,9,8,6,' ',5,2,3],
-                           [3,1,4,2,8,9,6,5,7],
-                           [8,5,2,7,3,6,1,9,4],
-                           [6,9,' ',5,1,4,3,8,2],
-                           [4,2,6,1,9,8,7,3,5],
-                           [9,3,5,6,2,7,8,4,1],
+                           [7,4,9,8,6,0,5,0,3],
+                           [3,1,0,2,8,9,6,5,7],
+                           [8,5,2,7,3,0,1,9,4],
+                           [6,9,7,5,1,4,3,8,2],
+                           [4,2,6,1,9,0,7,3,5],
+                           [0,3,5,6,2,7,8,0,1],
                            [1,7,8,4,5,3,2,6,9]]
 ##                          [[2,8,1,3,4,5,9,7,6],
 ##                           [5,6,3,9,7,2,4,1,8],
@@ -54,33 +53,60 @@ class Puzzle():
         return temp_puzzle
 
 
-    def __solve_BruteForce(self, r=0, c=0):
+    def __solve_BruteForce(self):
         '''Solve Brute Force method:
         Iterates through puzzle in search of empty spots and fills
         them recursively with a number in range 1-9. Upon every recursion
         the puzzle is checked if it meets the 'solution' requirements.'''
         if self.__is_solution():
             return True
-
-        while r < 9:
-            while c < 9:
-                if self.__puzzle[r][c] == ' ':
-                    self.__solution[r][c] = 0
-                    while self.__solution[r][c] < 9:
-                        self.__solution[r][c] += 1
-                        if self.__solve_BruteForce((r + ((c + 1) // 9)), (c + 1) % 9):
+        for r in range(9):
+            for c in range(9):
+                if self.__solution[r][c] == 0:
+                    for i in range(1,10):
+                        self.__solution[r][c] = i
+                        if self.__solve_BruteForce():
                             return True
-                c += 1
-            r += 1
-            c = 0
+                        self.__solution[r][c] = 0
         return False
+
+    
+    def __solve_BruteForceImproved(self):
+        '''Solve Brute Force method with efficiency:
+        Iterates through puzzle in search of empty spots and fills
+        them recursively with a VALID number in range 1-9. Upon every recursion
+        the puzzle is checked if it meets the 'solution' requirements.'''
+        if self.__is_solution():
+            return True
+        for r in range(9):
+            for c in range(9):
+                if self.__solution[r][c] == 0:
+                    for i in range(1,10):
+                        if self.__is_valid(r,c,i):
+                            self.__solution[r][c] = i
+                            if self.__solve_BruteForceImproved():
+                                return True
+                            self.__solution[r][c] = 0
+        return False
+    
+
+    def __is_valid(self, r, c, num):
+        # Check if number is in row, column, or 3x3 subblock
+        transposed = list(zip(*self.__solution))
+        if num in self.__solution[r] or num in transposed[c]:
+            return False
+        start_row, start_col = 3 * (r // 3), 3 * (c // 3)
+        for i in range(3):
+            for j in range(3):
+                if self.__solution[start_row + i][start_col + j] == num:
+                    return False
+        return True
 
     ######\/##### 
     def __is_solution(self):
         if (self.__rowtest() == True) and (self.__coltest() == True) and (self.__blocktest() == True):
             return True
-        else:
-            return False
+        return False
         
     # Helpers
     def __rowtest(self):
@@ -92,8 +118,6 @@ class Puzzle():
     def __coltest(self):
         for col in range(9):
             tempcol = set()
-##            for row in range(9):
-##                tempcol.add(self.solution[row][col])
             for row in self.__solution:
                 tempcol.add(row[col])
             if tempcol != self.__idealset:
@@ -123,14 +147,22 @@ class Puzzle():
         - Brute Force (backtracking)
         - in progress
         '''
+
+        dt0 = datetime.now()
         
         if type == None:
-            type = 'BruteForce'
+            type = 'BruteForceImproved'
         self.__solution = deepcopy(self.__puzzle)
         if type == 'BruteForce':
+            print('Solving Brute Force')
             if not self.__solve_BruteForce():
                 self.__solution = False
-            self.print_solution()
+        if type == 'BruteForceImproved':
+            print('Solving Brute Force Improved')
+            if not self.__solve_BruteForceImproved():
+                self.__solution = False
+        print(datetime.now() - dt0)
+        self.print_solution()
 
     def print_puzzle(self):
         print("Puzzle:   ")
@@ -138,10 +170,11 @@ class Puzzle():
             if ((row % 3 == 0) and (row != 0)):
                 print("-----------------------------------", end='\n')
             for col in range(9):
+                char = self.__puzzle[row][col] if self.__puzzle[row][col] != 0 else ' '
                 if ((((col + 1) % 3) == 0) and (col != 0)):
-                    print(f'{self.__puzzle[row][col]} | ', end = '')
+                    print(f'{char} | ', end = '')
                 else:
-                    print(f'{self.__puzzle[row][col]}   ', end = '')
+                    print(f'{char}   ', end = '')
             print('', end = '\n')
 
     def print_solution(self):
@@ -161,4 +194,3 @@ class Puzzle():
                 else:
                     print(f'{self.__solution[row][col]}   ', end = '')
             print('', end = '\n')
-
