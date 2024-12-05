@@ -28,7 +28,7 @@ class Puzzle():
                     inp = input(f"Input row {row + 1}: ")
                 temp_row = list()
                 for char in inp:
-                    temp_row.append(char)                    
+                    temp_row.append(int(char))                    
                 temp_puzzle.append(temp_row)
                 
         else:
@@ -139,7 +139,7 @@ class Puzzle():
     def __del__(self):
         print("Puzzle has been deleted from memory")
 
-    def solve(self, type:str=None):
+    def solve(self, type:str='BruteForceImproved'):
         '''
         Solve the puzzle with desired method.
         ...
@@ -147,11 +147,7 @@ class Puzzle():
         - Brute Force (backtracking)
         - in progress
         '''
-
         dt0 = datetime.now()
-        
-        if type == None:
-            type = 'BruteForceImproved'
         self.__solution = deepcopy(self.__puzzle)
         if type == 'BruteForce':
             print('Solving Brute Force')
@@ -161,7 +157,7 @@ class Puzzle():
             print('Solving Brute Force Improved')
             if not self.__solve_BruteForceImproved():
                 self.__solution = False
-        print(datetime.now() - dt0)
+        print('Time to solve: ', datetime.now() - dt0)
         self.print_solution()
 
     def print_puzzle(self):
